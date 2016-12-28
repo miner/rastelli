@@ -81,9 +81,6 @@
   (let [a (quot flight-distance 2)]
     (ellipse-y x a ymax)))
 
-(defn abs [x]
-  (if (neg? x) (- x) x))
-
 (defn eball-xy [ball flight-distance hfactor yoffset time]
   (let [rl (rl-beat (:start ball))
         fd flight-distance

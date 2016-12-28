@@ -25,29 +25,14 @@
   ([pat i j]
    (p/siteswap (as-pattern pat) i j)))
 
-
 (defn canonical [pattern]
   (p/canonical (as-pattern pattern)))
 
 (defn orbits [pattern]
   (p/orbits (as-pattern pattern)))
 
-;; SEM - `ball-starts` is ugly but seems correct.  Is there a better way?
-
 (defn numballs [pattern]
   (p/numballs (p/as-pattern pattern)))
-
-;; Need to find "orbits" to test composable patterns.
-
-;; need Knutsen flattening algo for siteswaps
-
-;;; --------
-;;; Now, thinking about timeline perspective, seems simpler.  Also gives full history.
-
-;;; timeline is vector of ball thrown at beat of index
-
-;; [:a :b :c]
-;;   3  3  3
 
 (defn ball-at [timeline beat]
   (when (contains? timeline beat)
@@ -73,7 +58,6 @@
         (assoc timeline dest ball)
         timeline))))
 
-
 (defn calc-timeline [pattern n]
   (let [patt (as-pattern pattern)
         num (numballs patt)
@@ -94,7 +78,6 @@
             ;;(println tl1)
             (recur tl1 (inc beat) (if ball held (rest held)) (rest ps))))
         (subvec timeline 0 len)))))
-
 
 (defn run
   ([patt] (run patt 4))
