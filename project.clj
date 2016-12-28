@@ -1,5 +1,5 @@
-(defproject com.velisco/rastelli "0.3.1-SNAPSHOT"
-  :description "FIXME: write description"
+(defproject com.velisco/rastelli "0.3.2-SNAPSHOT"
+  :description "Rastelli juggles with Clojure"
   :url "https://github.com/miner/rastelli"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
