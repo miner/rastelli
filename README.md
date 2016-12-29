@@ -1,4 +1,5 @@
 # Rastelli
+
 Rastelli juggles with Clojure
 
 ```
@@ -12,7 +13,7 @@ Rastelli juggles with Clojure
 [![Enrico Rastelli](images/rastelli.jpg)](https://en.wikipedia.org/wiki/Enrico_Rastelli)
 
 
-# Juggling Patterns and Programs
+## Juggling Patterns and Programs
 Presented at Clojure/conj, December 2016
 
 [![Juggling Patterns and Programs](images/jugpat.png)](https://www.youtube.com/watch?v=TqG176T69VM)
@@ -22,7 +23,7 @@ Presented at Clojure/conj, December 2016
 [video](https://www.youtube.com/watch?v=TqG176T69VM)
 
 
-## Copyright and License
+### License
 
 Copyright (c) 2016 Stephen E. Miner.
 
