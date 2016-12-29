@@ -1,6 +1,14 @@
 # Rastelli
 Rastelli juggles with Clojure
 
+```
+(require '[miner.rastelli.animate :as a])
+
+(a/animate 97531)
+```
+
+[![Sample 97531](images/97531.png)](sample#sample-animation)
+
 [![Enrico Rastelli](images/rastelli.jpg)](https://en.wikipedia.org/wiki/Enrico_Rastelli)
 
 
