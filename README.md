@@ -7,7 +7,7 @@ Rastelli juggles with Clojure
 (a/animate 97531)
 ```
 
-[![Sample 97531](images/97531.png)](sample#sample-animation)
+[![Sample 97531](images/97531.png)](https:/miner.github.io/rastelli)
 
 [![Enrico Rastelli](images/rastelli.jpg)](https://en.wikipedia.org/wiki/Enrico_Rastelli)
 
