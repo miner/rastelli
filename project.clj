@@ -6,4 +6,4 @@
   :dependencies [[org.clojure/clojure "1.9.0-alpha14"]
                  [org.clojure/test.check "0.9.0"]
                  [aysylu/loom "0.6.0"]
-                 [quil "2.5.0"]])
+                 [quil "2.6.0"]])
