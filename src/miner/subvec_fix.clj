@@ -10,11 +10,18 @@
 ;;  clojure.lang.APersistentVector$SubVector
 
 ;; work-around for subvector missing protocol support
+
 (when-not (satisfies?   clojure.core.protocols/IKVReduce (subvec [1] 0))
   (extend-type clojure.lang.APersistentVector$SubVector
     clojure.core.protocols/IKVReduce
-    (kv-reduce [subv f init]
-      (transduce (map-indexed vector)
-                 (fn ([ret] ret) ([ret [k v]] (f ret k v)))
-                 init
-                 subv))))
+    (kv-reduce
+      [subv f init]
+      (let [cnt (.count subv)]
+        (loop [k 0 ret init]
+          (if (< k cnt)
+            (let [val (.nth subv k)
+                  ret (f ret k val)]
+              (if (reduced? ret)
+                @ret
+                (recur (inc k) ret)))
+            ret))))))
