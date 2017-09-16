@@ -1,7 +1,7 @@
 (ns miner.rastelli
   (:require [miner.rastelli.pattern :as p]
             [miner.subvec-fix]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [clojure.string :as str]))
 
 

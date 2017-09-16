@@ -12,6 +12,8 @@ Rastelli juggles with Clojure
 
 [![Enrico Rastelli](images/rastelli.jpg)](https://en.wikipedia.org/wiki/Enrico_Rastelli)
 
+[Raselli video](https://www.youtube.com/watch?v=mowNKg1vhl8)
+
 
 ## Juggling Patterns and Programs
 Presented at Clojure/conj, December 2016

@@ -1,7 +1,7 @@
 (ns miner.rastelli.pattern
   (:require [miner.rastelli.util :as util]
             miner.subvec-fix
-            [clojure.spec :as s]) )
+            [clojure.spec.alpha :as s]) )
 
 ;; convenience for converting other notations in vector of ints
 (defn as-pattern [pat]
