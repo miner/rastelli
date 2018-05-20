@@ -1,7 +1,12 @@
 (ns miner.rastelli.state
-  (:require [loom.graph :as lg]
-            [loom.alg :as la]
-            [loom.io :as lio]) )
+  (:require [clojure.set :as set]
+            #_ [clojure.data.int-map :as i])
+  )
+
+;; NOTE: some of this is used only by miner.rastelli.loom
+
+;; Definitely prefer state in long, bit order=time.  Better for making graphs with simple
+;; state as nodes.
 
 (set! *unchecked-math* :warn-on-unboxed)
 
@@ -89,7 +94,7 @@
 ;; Not sure about th=0
 
 ;; Issue: if landing 0 = false, there's no old ball to throw.  Is it safe to assume you can get
-;; a ball?  Or should we not allow any throw when t0=0?
+;; a ball? (NO)  Or should we not allow any throw when t0=0?  Decided: only 0 throw if t0=0.
 
 ;; bstate is a bitmask treated in bit=time order, always shifting right
 (defn btrans
@@ -113,22 +118,6 @@
 
 
 
-;; bad name
-(defn btrans1 [bstate max-throw]
-  (reduce (fn [m th] (if-let [newst (btrans bstate th)] (assoc m th newst) m)) {}
-          (range (inc max-throw))))
-
-(defn bgraph [num-balls max-throw]
-  (loop [graph {} states (list (binit num-balls))]
-    (cond (empty? states) graph
-          (contains? graph (first states)) (recur graph (rest states))
-          :else (let [st1 (first states)
-                      trans1 (btrans1 st1 max-throw)]
-                  (recur (assoc graph st1 trans1) (into (rest states) (vals trans1)))))))
-
-
-
-
 ;; reworking for Loom and Ubergraph notation of adjacency graph
 ;; node names first, val is "weight" which we will use as the throw label
 ;; Basically, just swapping the key/val in the submaps
@@ -146,6 +135,12 @@
     ;; no ball, so only zero works
     {(bit-shift-right bstate 1) 0}))
 
+
+;; Needed for Loom/Ubergraph approach in loom.clj
+;; SEM FIXME: move it to loom.clj with other wadj- stuff
+;; and rename to graph.clj
+
+;; returns {st1 {st2 th2 st3 th3 ...} st2 {...} ...}
 (defn wadj-map [num-balls max-throw]
   (loop [wadj {} states (list (binit num-balls))]
     (cond (empty? states) (with-meta wadj {::ballCount num-balls ::max-throw max-throw})
@@ -153,6 +148,8 @@
           :else (let [st1 (first states)
                       trans1 (successor-bstate-throws st1 max-throw)]
                   (recur (assoc wadj st1 trans1) (into (rest states) (keys trans1)))))))
+
+
 
 ;; bitCount is always the number of balls at binit
 ;; width is always the highest throw allowed at binit
@@ -188,80 +185,75 @@
   (let [kf #(lsb-str maxthrow %)]
     (mapmap kf #(mapk kf %) (wadj-map numballs maxthrow))))
 
-
-(defn view [num-balls max-throw]
-  (let [wadj (lsb-wadj num-balls max-throw)
-        g (lg/weighted-digraph wadj)]
-    (lio/view g)))
     
 
 
-(defn states->pattern [states]
+(defn stateseq->pattern [states]
   (when (seq states)
     (let [edges (partition 2 1 states)]
       (if (seq edges)
-        (map #(apply calc-throw %) edges)
-        (list (calc-throw (first states) (first states)))))))
-
-;; UNIMPLEMENTED -- use the graph stuff instead
-(defn find-patterns
-  ([graph] (find-patterns graph 5))
-  ([graph max-length]
-   (let [base (apply min (lg/nodes graph))
-         starts (lg/successors graph base)]
-     (map #(states->pattern (cons base (la/bf-path graph % base))) starts))))
+        (mapv #(apply calc-throw %) edges)
+        (when-let [base (calc-throw (first states) (first states))]
+          (vector base))))))
 
 
-;; assumes we only care about starting from base (lowest state)
-;; will not find multiple cycle circuits
-;; simple circuits never visit the same node twice (except for the start)
-(defn find-simple-circuits [graph]
-  (let [base (apply min (lg/nodes graph))]
-    (loop [paths (list [base]) circuits []]
+
+;; SEM NEW IDEA use int-map and int-set since the states and throws are encoded as ints
+;; UNIMPLEMENTED
+
+;; BETTER IDEA -- find any cycle, not just base
+;; when overlap with path, add it
+
+
+(defn successor-bstates [bstate max-throw]
+  (if (bit-test bstate 0)
+    ;; there's a ball
+    (reduce (fn [bset th]
+              ;; conflict if the ball would land in an occupied slot
+              (if (bit-test bstate th)
+                bset
+                (conj bset (bit-shift-right (bit-set bstate th) 1))))
+            ()
+            (range (inc max-throw)))
+    ;; no ball, so only zero works
+    (list (bit-shift-right bstate 1))))
+
+;; similar to wadj-map but doesn't store throws, just the successor states as list
+;; #{Set} values didn't seem to be worth it.
+(defn successor-map [num-balls max-throw]
+  (loop [ss {} states #{(binit num-balls)}]
+    (if (empty? states)
+      ss 
+      (let [st1 (first states)
+            trans1 (successor-bstates st1 max-throw)
+            ss2 (assoc ss st1 trans1)]
+        (recur ss2 (into (disj states st1) (remove ss2 trans1)))))))
+
+;; note (some #{n} coll) is slower
+;; than (some #(= n %) coll)
+;; for integer n, and relatively small coll (100 elements)
+;; probably hashing is more expensive than =
+;; doesn't appear to be the case for kw
+
+;; For our purposes, a circuit is any path the goes back to a state already in the path.
+;; At first, we only cared about simple circuits that returned to the original state, but
+;; we relaxed that constraint to any state already on the path.
+
+(defn find-circuits [numballs maxthrow]
+  (let [base (binit numballs)
+        ss (successor-map numballs maxthrow)]
+    (loop [paths (map #(conj [base] %) (get ss base)) circuits []]
       (if (seq paths)
         (let [path (first paths)
-              succs (lg/successors graph (peek path))
-              found? (some #{base} succs)
-              ;; remove any successors already in the path, avoiding loops
-              ;; note: base is always the start of path
-              exts (remove (set path) succs)]
-          ;;(println paths circuits found? exts)
-          (recur (into (rest paths) (map #(conj path %) exts))
-                 (if found? (conj circuits (conj path base)) circuits)))
+              end (peek path)]
+          (if (some #(= end %) (pop path))
+            (recur (rest paths) (conj circuits path))
+            (recur (into (rest paths) (map #(conj path %) (get ss end))) circuits)))
         circuits))))
 
-;; only slightly faster if we keep the path-set around, not worth the extra code
 
-
-
-(defn find-patterns-the-hard-way [numballs maxthrow]
-  (let [graph (lg/weighted-digraph (wadj-map numballs maxthrow))]
-    (map states->pattern (find-simple-circuits graph))))
 
 
 ;; Didn't use the general algorithms, because we have special knowlege that graph is
 ;; strongly connected (by construction, I think, but really should check), and we know the
 ;; base state (lowest value) because is the standard n-ball pattern, or ground-state.
-
-;; probably need other search alg for cycles
-
-
-;; https://blog.mister-muffin.de/2012/07/04/enumerating-elementary-circuits-of-a-directed_graph/
-;; algos: Tarjan, Johnson, and Hawick
-
-;; Lots of potential here, in Java:
-;; https://github.com/jgrapht/jgrapht
-
-;; need transitive closure
-        
-;; Much more compact and probably better for hashing as ints
-; {st1 {th1 st11 th2 st12}
-; st11 {th2 st112 th3 st113}
-; ...}
-
-
-(comment
-
-  (def g35 (lg/weighted-digraph (wadj-map 3 5)))
-
-  )

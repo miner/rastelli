@@ -3,8 +3,9 @@
   :url "https://github.com/miner/rastelli"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.9.0-alpha20"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/test.check "0.9.0"]
+                 #_ [org.clojure/data.int-map "0.2.4"]
                  ;; [ubergraph "0.4.1-sem"]
-                 [aysylu/loom "1.0.0"]
-                 [quil "2.6.0"]])
+                 [aysylu/loom "1.0.1"]
+                 [quil "2.7.1"]])
