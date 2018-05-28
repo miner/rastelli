@@ -321,17 +321,18 @@
    (let [pat (p/as-pattern pat)]
      (when-not (p/siteswap? pat)
        (throw (ex-info "Illegal pattern" {:illegal pat})))
-     (q/defsketch juggling
-       :host "host"
-       :title "Jeeves Juggler"
-       :size [600  720]
-       :setup (setup-with pat)
-       :update update-state
-       :draw draw-state
-       :mouse-clicked clicked
-       :key-pressed key-pressed
-       :features [:resizable]
-       :middleware [qm/fun-mode])
-     {:pattern pat
-      :numballs (p/numballs pat)
-      :orbits (p/orbits pat)})))
+     (let [sk (q/sketch 
+               :host "host"
+               :title "Rastelli"
+               :size [600  720]
+               :setup (setup-with pat)
+               :update update-state
+               :draw draw-state
+               :mouse-clicked clicked
+               :key-pressed key-pressed
+               :features [:resizable]
+               :middleware [qm/fun-mode])]
+       {:pattern pat
+        :numballs (p/numballs pat)
+        :orbits (p/orbits pat)
+        :sketch sk}))))
