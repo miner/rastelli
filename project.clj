@@ -7,5 +7,5 @@
                  [org.clojure/test.check "0.9.0"]
                  #_ [org.clojure/data.int-map "0.2.4"]
                  ;; [ubergraph "0.4.1-sem"]
-                 [aysylu/loom "1.0.1"]
-                 [quil "2.7.1"]])
+                 [aysylu/loom "1.0.2"]
+                 [quil "2.8.0"]])
