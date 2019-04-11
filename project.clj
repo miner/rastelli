@@ -8,4 +8,4 @@
                  #_ [org.clojure/data.int-map "0.2.4"]
                  ;; [ubergraph "0.4.1-sem"]
                  [aysylu/loom "1.0.2"]
-                 [quil "2.8.0"]])
+                 [quil "3.0.0"]])
